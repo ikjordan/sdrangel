@@ -781,6 +781,11 @@
         </item>
         <item>
          <property name="text">
+          <string>LongI</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>ShortNI</string>
          </property>
         </item>

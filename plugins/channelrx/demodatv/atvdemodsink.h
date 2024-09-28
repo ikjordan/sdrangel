@@ -133,6 +133,7 @@ private:
     int m_numberSamplesPerHSync;       //!< number of samples per horizontal synchronization pattern (pulse + back porch)
     int m_numberSamplesHSyncCrop;      //!< number of samples to crop from start of horizontal synchronization
     bool m_interleaved;                //!< interleaved image
+    bool m_equalVBlank;                //!< Equal length vertical blanking for interleaved image
 
     //*************** PROCESSING  ***************
 
@@ -272,10 +273,20 @@ private:
         {
             if (m_interleaved)
             {
-                if (m_fieldDetectSampleCount > m_fieldDetectThreshold1)
-                    m_fieldIndex = 0;
-                else if (m_fieldDetectSampleCount < m_fieldDetectThreshold2)
-                    m_fieldIndex = 1;
+                if (m_equalVBlank)
+                {
+                    if (m_lineIndex >= 3)
+                    {
+                        m_fieldIndex = 1 - m_fieldIndex;
+                    }
+                }
+                else
+                {
+                    if (m_fieldDetectSampleCount > m_fieldDetectThreshold1)
+                        m_fieldIndex = 0;
+                    else if (m_fieldDetectSampleCount < m_fieldDetectThreshold2)
+                        m_fieldIndex = 1;
+                }
             }
             m_lineIndex = 2;
         }

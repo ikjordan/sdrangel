@@ -42,6 +42,7 @@ struct ATVDemodSettings
         ATVStdPAL525,
         ATVStd819,
         ATVStdShortInterleaved,
+        ATVStdLongInterleaved,
         ATVStdShort,
         ATVStdHSkip
     };

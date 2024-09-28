@@ -320,12 +320,14 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
     case ATVDemodSettings::ATVStdHSkip:
         // what is left in a line for the image
         m_interleaved        = false; // irrelevant
+        m_equalVBlank        = false; // irrelevant
         m_numberOfBlackLines = 0;
         m_numberSamplesHSyncCrop = (int) (0.09f * lineDuration * sampleRate); // 9% of full line empirically
         break;
     case ATVDemodSettings::ATVStdShort:
         // what is left in a line for the image
         m_interleaved        = false;
+        m_equalVBlank        = false; // irrelevant
         m_numberOfVSyncLines = 2;
         m_numberOfBlackLines = 4;
         m_firstVisibleLine   = 3;
@@ -334,6 +336,7 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
     case ATVDemodSettings::ATVStdShortInterleaved:
         // what is left in a line for the image
         m_interleaved        = true;
+        m_equalVBlank        = false;
         m_numberOfVSyncLines = 2;
         m_numberOfBlackLines = 5;
         m_firstVisibleLine   = 3;
@@ -342,6 +345,7 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
     case ATVDemodSettings::ATVStd819: // 819 lines standard F
         // what is left in a line for the image
         m_interleaved        = true;
+        m_equalVBlank        = false;
         m_numberOfVSyncLines = 4;
         m_numberOfBlackLines = 59;
         m_firstVisibleLine   = 27;
@@ -350,15 +354,25 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
     case ATVDemodSettings::ATVStdPAL525: // Follows PAL-M standard
         // what is left in a 64/1.008 us line for the image
         m_interleaved        = true;
+        m_equalVBlank        = false;
         m_numberOfVSyncLines = 4;
         m_numberOfBlackLines = 45;
         m_firstVisibleLine   = 20;
+        m_numberSamplesHSyncCrop = (int) (0.085f * lineDuration * sampleRate); // 8.5% of full line empirically
+        break;
+    case ATVDemodSettings::ATVStdLongInterleaved: // Follows Sinclair ZX81
+        m_interleaved        = true;
+        m_equalVBlank        = true;
+        m_numberOfVSyncLines = 6;
+        m_numberOfBlackLines = 49;
+        m_firstVisibleLine   = 23;
         m_numberSamplesHSyncCrop = (int) (0.085f * lineDuration * sampleRate); // 8.5% of full line empirically
         break;
     case ATVDemodSettings::ATVStdPAL625: // Follows PAL-B/G/H standard
     default:
         // what is left in a 64 us line for the image
         m_interleaved        = true;
+        m_equalVBlank        = false;
         m_numberOfVSyncLines = 3;
         m_numberOfBlackLines = 49;
         m_firstVisibleLine   = 23;
