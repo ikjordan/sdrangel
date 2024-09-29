@@ -134,6 +134,8 @@ private:
     int m_numberSamplesHSyncCrop;      //!< number of samples to crop from start of horizontal synchronization
     bool m_interleaved;                //!< interleaved image
     bool m_equalVBlank;                //!< Equal length vertical blanking for interleaved image
+    int m_lineDelta;                   //!< Variation in lines allowed from specified standard
+    float m_timingAdjust;              //!< Deviation from standards timing
 
     //*************** PROCESSING  ***************
 
@@ -293,7 +295,7 @@ private:
         m_fieldDetectSampleCount = 0;
         m_vSyncDetectSampleCount = 0;
 
-        if (m_lineIndex > m_settings.m_nbLines / 2 + m_fieldIndex && m_interleaved)
+        if ((m_lineIndex > m_settings.m_nbLines / 2 + m_fieldIndex + m_lineDelta) && m_interleaved)
         {
             m_lineIndex = 1;
             m_fieldIndex = 1 - m_fieldIndex;
