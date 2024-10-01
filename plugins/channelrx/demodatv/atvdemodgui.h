@@ -113,6 +113,8 @@ private slots:
     void tick();
     void on_synchLevel_valueChanged(int value);
     void on_blackLevel_valueChanged(int value);
+    void on_minLinesLevel_valueChanged(int value);
+    void on_maxLinesLevel_valueChanged(int value);
     void on_hSync_clicked();
     void on_vSync_clicked();
     void on_invertVideo_clicked();

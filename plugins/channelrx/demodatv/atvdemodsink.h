@@ -133,14 +133,11 @@ private:
     int m_numberSamplesPerHSync;       //!< number of samples per horizontal synchronization pattern (pulse + back porch)
     int m_numberSamplesHSyncCrop;      //!< number of samples to crop from start of horizontal synchronization
     bool m_interleaved;                //!< interleaved image
-    bool m_equalVBlank;                //!< Equal length vertical blanking for interleaved image
-    int m_lineDelta;                   //!< Variation in lines allowed from specified standard
-    float m_timingAdjust;              //!< Deviation from standards timing
+    float m_horizontalAdjust;          //!< Deviation from standards timing
 
     //*************** PROCESSING  ***************
 
     int m_fieldIndex;
-    int m_synchroSamples;
 
     int m_fieldDetectSampleCount;
     int m_vSyncDetectSampleCount;
@@ -252,9 +249,16 @@ private:
 			m_hSyncShift = 0.0f;
 
 			m_lineIndex++;
-			if (m_settings.m_atvStd == ATVDemodSettings::ATVStdHSkip) {
+			if (m_settings.m_atvStd == ATVDemodSettings::ATVStdHSkip)
+            {
                 processEOLHSkip();
-            } else {
+            }
+            else if (m_settings.m_atvStd == ATVDemodSettings::ATVStdLongInterleaved)
+            {
+                processEOLComputer();
+            }
+            else
+            {
                 processEOLClassic();
             }
         }
@@ -273,29 +277,16 @@ private:
         if (m_vSyncDetectSampleCount > m_vSyncDetectThreshold &&
             (m_lineIndex < 3 || m_lineIndex > m_numberOfVSyncLines + 1) && m_settings.m_vSync)
         {
-            if (m_interleaved)
-            {
-                if (m_equalVBlank)
-                {
-                    if (m_lineIndex >= 3)
-                    {
-                        m_fieldIndex = 1 - m_fieldIndex;
-                    }
-                }
-                else
-                {
                     if (m_fieldDetectSampleCount > m_fieldDetectThreshold1)
                         m_fieldIndex = 0;
                     else if (m_fieldDetectSampleCount < m_fieldDetectThreshold2)
                         m_fieldIndex = 1;
-                }
-            }
             m_lineIndex = 2;
         }
         m_fieldDetectSampleCount = 0;
         m_vSyncDetectSampleCount = 0;
 
-        if ((m_lineIndex > m_settings.m_nbLines / 2 + m_fieldIndex + m_lineDelta) && m_interleaved)
+        if ((m_lineIndex > m_settings.m_nbLines / 2 + m_fieldIndex + 3) && m_interleaved)
         {
             m_lineIndex = 1;
             m_fieldIndex = 1 - m_fieldIndex;
@@ -310,6 +301,44 @@ private:
         if (m_interleaved)
             rowIndex = rowIndex * 2 - m_fieldIndex;
 
+		m_tvScreenBuffer->selectRow(rowIndex, m_sampleOffsetFrac);
+	}
+
+    // Computer with flywheel CRT
+    inline void processEOLComputer()
+    {
+        if (m_lineIndex == m_numberOfVSyncLines + 3 && m_fieldIndex == 0)
+        {
+			m_tvScreenBuffer = m_registeredTVScreen->swapBuffers();
+        }
+
+        if (m_vSyncDetectSampleCount > m_vSyncDetectThreshold &&
+            (m_lineIndex < 4 || m_lineIndex > (m_settings.m_nbLines / 2 + m_fieldIndex + m_settings.m_maxLinesSync - m_settings.m_minLinesSync + 1)) &&
+            m_settings.m_vSync)
+        {
+            if (m_lineIndex >= 4)
+            {
+                // Need to blank rest of lines
+                int rowIndex = (m_lineIndex + 1 - m_firstVisibleLine) * 2 - m_fieldIndex;
+
+                for (int i = rowIndex; i < m_settings.m_nbLines; i += 2)
+                {
+                    m_tvScreenBuffer->clearRow(i);
+                }
+                m_fieldIndex = 1 - m_fieldIndex;
+            }
+            m_lineIndex = 2; // Hold until vsync ends
+        }
+        m_fieldDetectSampleCount = 0;
+        m_vSyncDetectSampleCount = 0;
+
+        if ((m_lineIndex > m_settings.m_nbLines / 2 + m_fieldIndex + m_settings.m_maxLinesSync) && m_interleaved)
+        {
+            m_lineIndex = 1;
+            m_fieldIndex = 1 - m_fieldIndex;
+        }
+
+        int rowIndex = (m_lineIndex - m_firstVisibleLine) * 2 - m_fieldIndex;
 		m_tvScreenBuffer->selectRow(rowIndex, m_sampleOffsetFrac);
 	}
 

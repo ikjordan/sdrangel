@@ -108,6 +108,9 @@ QByteArray ATVDemodSettings::serialize() const
     s.writeBlob(32, m_geometryBytes);
     s.writeBool(33, m_hidden);
 
+    s.writeS32(34, m_minLinesSync);
+    s.writeS32(35, m_maxLinesSync);
+
     return s.final();
 }
 
@@ -187,6 +190,9 @@ bool ATVDemodSettings::deserialize(const QByteArray& arrData)
         d.readS32(31, &m_workspaceIndex, 0);
         d.readBlob(32, &m_geometryBytes);
         d.readBool(33, &m_hidden, false);
+
+        d.readS32(34, &m_minLinesSync, 20);
+        d.readS32(35, &m_maxLinesSync, 10);
 
         return true;
     }

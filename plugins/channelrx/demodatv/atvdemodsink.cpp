@@ -37,7 +37,6 @@ ATVDemodSink::ATVDemodSink() :
     m_registeredTVScreen(nullptr),
     m_numberSamplesPerHTop(0),
     m_fieldIndex(0),
-    m_synchroSamples(0),
     m_effMin(20.0f),
     m_effMax(-20.0f),
     m_ampMin(-1.0f),
@@ -59,7 +58,6 @@ ATVDemodSink::ATVDemodSink() :
 {
     qDebug("ATVDemodSink::ATVDemodSink");
     //*************** ATV PARAMETERS  ***************
-    m_synchroSamples=0;
     m_interleaved = true;
 
     m_DSBFilter = new fftfilt(m_settings.m_fftBandwidth / (float) m_channelSampleRate, 2*m_ssbFftLen); // arbitrary cutoff
@@ -315,9 +313,7 @@ void ATVDemodSink::demod(Complex& c)
 
 void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd, float lineDuration)
 {
-    m_equalVBlank        = false;
-    m_timingAdjust       = 0.0f;
-    m_lineDelta          = 0;
+    m_horizontalAdjust       = 0.0f;
 
     switch(atvStd)
     {
@@ -361,12 +357,10 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
         break;
     case ATVDemodSettings::ATVStdLongInterleaved: // Follows Sinclair ZX81
         m_interleaved        = true;
-        m_equalVBlank        = true;
         m_numberOfVSyncLines = 6;
         m_numberOfBlackLines = 49;
-        m_firstVisibleLine   = 23;
-        m_timingAdjust       = 0.75f;
-        m_lineDelta          = 6;       // As some programs insert extra lines
+        m_firstVisibleLine   = 15;      // Move display down
+        m_horizontalAdjust   = 0.75f;   // Move display left
         m_numberSamplesHSyncCrop = (int) (0.085f * lineDuration * sampleRate); // 8.5% of full line empirically
         break;
     case ATVDemodSettings::ATVStdPAL625: // Follows PAL-B/G/H standard
@@ -384,7 +378,7 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
     // Rec. ITU-R BT.1700
     // Table 2. Details of line synchronizing signals
     m_numberSamplesPerLineSignals = (int)(lineDuration * sampleRate * 12.0  / 64.0); // "a", Line-blanking interval
-    m_numberSamplesPerHSync       = (int)(lineDuration * sampleRate * (10.5 + m_timingAdjust) / 64.0); // "b", Interval between time datum and back edge of line-blanking pulse
+    m_numberSamplesPerHSync       = (int)(lineDuration * sampleRate * (10.5 + m_horizontalAdjust) / 64.0); // "b", Interval between time datum and back edge of line-blanking pulse
     m_numberSamplesPerHTop        = (int)(lineDuration * sampleRate *  4.7  / 64.0); // "d", Duration of synchronizing pulse
 
     // Table 3. Details of field synchronizing signals

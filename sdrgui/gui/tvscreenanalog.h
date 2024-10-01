@@ -76,6 +76,14 @@ public:
 		return m_imageData;
 	}
 
+	void clearRow(int line)
+	{
+		if ((line < m_height) && (line >= 0))
+		{
+			std::fill(m_imageData + line * m_width, m_imageData + (line + 1) * m_width, 0);
+		}
+	}
+
 	const int* getLineShiftData()
 	{
 		return m_lineShiftData;

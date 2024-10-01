@@ -189,6 +189,8 @@ void ATVDemod::applySettings(const ATVDemodSettings& settings, bool force)
             << "m_halfFrames:" << settings.m_halfFrames
             << "m_levelSynchroTop:" << settings.m_levelSynchroTop
             << "m_levelBlack:" << settings.m_levelBlack
+            << "m_minLinesSync" << settings.m_minLinesSync
+            << "m_maxLinesSync" << settings.m_maxLinesSync
             << "m_rgbColor:" << settings.m_rgbColor
             << "m_title:" << settings.m_title
             << "m_udpAddress:" << settings.m_udpAddress

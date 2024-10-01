@@ -101,6 +101,10 @@ void ATVDemodGUI::displaySettings()
     ui->synchLevelText->setText(QString("%1 mV").arg((int) (m_settings.m_levelSynchroTop * 1000.0f)));
     ui->blackLevel->setValue((int) (m_settings.m_levelBlack * 1000.0f));
     ui->blackLevelText->setText(QString("%1 mV").arg((int) (m_settings.m_levelBlack * 1000.0f)));
+    ui->minLinesLevel->setValue(m_settings.m_minLinesSync);
+    ui->minLinesLevelText->setText(QString("%1 Lines").arg(m_settings.m_minLinesSync));
+    ui->maxLinesLevel->setValue(m_settings.m_maxLinesSync);
+    ui->maxLinesLevelText->setText(QString("%1 Lines").arg(m_settings.m_maxLinesSync));
     ui->modulation->setCurrentIndex((int) m_settings.m_atvModulation);
     ui->fps->setCurrentIndex(ATVDemodSettings::getFpsIndex(m_settings.m_fps));
     ui->nbLines->setCurrentIndex(ATVDemodSettings::getNumberOfLinesIndex(m_settings.m_nbLines));
@@ -469,6 +473,20 @@ void ATVDemodGUI::on_blackLevel_valueChanged(int value)
     applySettings();
 }
 
+void ATVDemodGUI::on_minLinesLevel_valueChanged(int value)
+{
+    ui->minLinesLevelText->setText(QString("%1 Lines").arg(value));
+    m_settings.m_minLinesSync = value;
+    applySettings();
+}
+
+void ATVDemodGUI::on_maxLinesLevel_valueChanged(int value)
+{
+    ui->maxLinesLevelText->setText(QString("%1 Lines").arg(value));
+    m_settings.m_maxLinesSync = value;
+    applySettings();
+}
+
 void ATVDemodGUI::on_hSync_clicked()
 {
     m_settings.m_hSync = ui->hSync->isChecked();
@@ -630,6 +648,8 @@ void ATVDemodGUI::makeUIConnections()
 {
     QObject::connect(ui->synchLevel, &QSlider::valueChanged, this, &ATVDemodGUI::on_synchLevel_valueChanged);
     QObject::connect(ui->blackLevel, &QSlider::valueChanged, this, &ATVDemodGUI::on_blackLevel_valueChanged);
+    QObject::connect(ui->minLinesLevel, &QSlider::valueChanged, this, &ATVDemodGUI::on_minLinesLevel_valueChanged);
+    QObject::connect(ui->maxLinesLevel, &QSlider::valueChanged, this, &ATVDemodGUI::on_maxLinesLevel_valueChanged);
     QObject::connect(ui->hSync, &QCheckBox::clicked, this, &ATVDemodGUI::on_hSync_clicked);
     QObject::connect(ui->vSync, &QCheckBox::clicked, this, &ATVDemodGUI::on_vSync_clicked);
     QObject::connect(ui->invertVideo, &QCheckBox::clicked, this, &ATVDemodGUI::on_invertVideo_clicked);

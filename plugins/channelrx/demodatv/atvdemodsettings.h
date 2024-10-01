@@ -68,6 +68,8 @@ struct ATVDemodSettings
     bool          m_halfFrames;           //!< Toggle half frames processing
     float         m_levelSynchroTop;      //!< Horizontal synchronization top level (0.0 to 1.0 scale)
     float         m_levelBlack;           //!< Black level (0.0 to 1.0 scale)
+    int           m_maxLinesSync;         //!< Number of lines above standard number of lines where vsync forced
+    int           m_minLinesSync;         //!< Number of lines below (standard number + max lines) where vsync can be detected
 
     // common channel settings
     quint32 m_rgbColor;
