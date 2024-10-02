@@ -255,7 +255,7 @@ private:
             }
             else if (m_settings.m_atvStd == ATVDemodSettings::ATVStdLongInterleaved)
             {
-                processEOLComputer();
+                processEOLCRT();
             }
             else
             {
@@ -305,35 +305,73 @@ private:
 	}
 
     // Computer with flywheel CRT
-    inline void processEOLComputer()
+    // From: https://uzebox.org/forums/viewtopic.php?t=11062
+    // The blanking signal charges a capacitor, once it goes past a threshold the
+    // TV/CRT takes that as a vertical blank and moves the beam back to the top
+    // and holds it there until it discharges back down past a lower threshold
+    // (it's got a bit of an hysteresis, we don't really care about this detail for an emulator).
+    // Digital tuners just do: when the blank is longer than the non-blank it's considered a vertical blank.
+    // This is why a digital tuner cannot display QSDefenda correctly, but an analog CRT can
+    inline void processEOLCRT()
     {
-        if (m_lineIndex == m_numberOfVSyncLines + 3 && m_fieldIndex == 0)
+        static int interlaceCount = 0;
+
+        if (m_lineIndex == 4 && m_fieldIndex == 0)
         {
 			m_tvScreenBuffer = m_registeredTVScreen->swapBuffers();
         }
 
-        if (m_vSyncDetectSampleCount > m_vSyncDetectThreshold &&
-            (m_lineIndex < 4 || m_lineIndex > (m_settings.m_nbLines / 2 + m_fieldIndex + m_settings.m_maxLinesSync - m_settings.m_minLinesSync + 1)) &&
+        if ((m_vSyncDetectSampleCount > m_vSyncDetectThreshold) &&
+            ((m_lineIndex < 4) || (m_lineIndex > (m_settings.m_nbLines / 2 + m_fieldIndex + m_settings.m_maxLinesSync - m_settings.m_minLinesSync + 1))) &&
             m_settings.m_vSync)
         {
             if (m_lineIndex >= 4)
             {
-                // Need to blank rest of lines
+                // Need to blank rest of lines as beam moving to top of screen
                 int rowIndex = (m_lineIndex + 1 - m_firstVisibleLine) * 2 - m_fieldIndex;
 
                 for (int i = rowIndex; i < m_settings.m_nbLines; i += 2)
                 {
                     m_tvScreenBuffer->clearRow(i);
                 }
-                m_fieldIndex = 1 - m_fieldIndex;
+
+                // See if we have detected a short field
+                if (m_fieldDetectSampleCount < m_fieldDetectThreshold2)
+                {
+                    if (m_fieldIndex == 1)
+                    {
+                        qInfo("Wrong interlace");
+                        interlaceCount++;
+                    }
+                    else
+                    {
+                        if (interlaceCount >0) interlaceCount--;
+                    }
+
+                    if (interlaceCount < 3)
+                    {
+                        m_fieldIndex = 1;
+                    }
+                    else
+                    {
+                        m_fieldIndex = 1 - m_fieldIndex;
+                    }
+                }
+                else
+                {
+                    // alternate
+                    m_fieldIndex = 1 - m_fieldIndex;
+                }
             }
-            m_lineIndex = 2; // Hold until vsync ends
+            m_lineIndex = 2; // Vsync is still active, so hold beam at top of screen
         }
+
         m_fieldDetectSampleCount = 0;
         m_vSyncDetectSampleCount = 0;
 
         if ((m_lineIndex > m_settings.m_nbLines / 2 + m_fieldIndex + m_settings.m_maxLinesSync) && m_interleaved)
         {
+            // CRT has gone past max lines, trigger vertical retrace
             m_lineIndex = 1;
             m_fieldIndex = 1 - m_fieldIndex;
         }

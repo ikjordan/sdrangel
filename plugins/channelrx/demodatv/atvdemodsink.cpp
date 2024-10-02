@@ -393,7 +393,7 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
     m_vSyncDetectStartPos = (int)(lineDuration * sampleRate * (p + hl) / 64.0);
     m_vSyncDetectEndPos   = (int)(lineDuration * sampleRate * (q + hl) / 64.0);
 
-    float fieldDetectPercent = 0.75f; // It is better not to detect field index than detect it wrong
+    float fieldDetectPercent = 0.85f; // It is better not to detect field index than detect it wrong
     float detectTotalLen = lineDuration * sampleRate * (q - p) / 64.0; // same for field index and vSync detection
     m_fieldDetectThreshold1 = (int)(detectTotalLen * fieldDetectPercent);
     m_fieldDetectThreshold2 = (int)(detectTotalLen * (1.0f - fieldDetectPercent));
