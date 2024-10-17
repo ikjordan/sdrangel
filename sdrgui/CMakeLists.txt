@@ -74,6 +74,7 @@ set(sdrgui_SOURCES
     gui/mdiutils.cpp
     gui/mypositiondialog.cpp
     gui/nanosecondsdelegate.cpp
+    gui/perioddial.cpp
     gui/pluginsdialog.cpp
     gui/pluginpresetsdialog.cpp
     gui/presetitem.cpp
@@ -103,6 +104,8 @@ set(sdrgui_SOURCES
     gui/workspaceselectiondialog.cpp
     gui/wsspectrumsettingsdialog.cpp
     gui/wrappingdatetimeedit.cpp
+    gui/wrappingdial.cpp
+    gui/wrappingspinbox.cpp
 
     dsp/scopevisxy.cpp
 
@@ -201,6 +204,7 @@ set(sdrgui_HEADERS
     gui/mdiutils.h
     gui/mypositiondialog.h
     gui/nanosecondsdelegate.h
+    gui/perioddial.h
     gui/physicalunit.h
     gui/pluginsdialog.h
     gui/pluginpresetsdialog.h
@@ -233,6 +237,8 @@ set(sdrgui_HEADERS
     gui/workspaceselectiondialog.h
     gui/wsspectrumsettingsdialog.h
     gui/wrappingdatetimeedit.h
+    gui/wrappingdial.h
+    gui/wrappingspinbox.h
 
     dsp/scopevisxy.h
 
@@ -337,6 +343,9 @@ target_link_libraries(sdrgui
   logging
   )
 if (Qt6_FOUND)
+  target_link_libraries(sdrgui
+    Qt6::StateMachine
+  )
   target_link_libraries(sdrbase
     Qt::OpenGLWidgets
   )

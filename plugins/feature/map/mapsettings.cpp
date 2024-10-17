@@ -38,6 +38,7 @@ const QStringList MapSettings::m_pipeTypes = {
     QStringLiteral("FT8Demod"),
     QStringLiteral("HeatMap"),
     QStringLiteral("ILSDemod"),
+    QStringLiteral("PagerDemod"),
     QStringLiteral("Radiosonde"),
     QStringLiteral("StarTracker"),
     QStringLiteral("SatelliteTracker"),
@@ -55,6 +56,7 @@ const QStringList MapSettings::m_pipeURIs = {
     QStringLiteral("sdrangel.channel.ft8demod"),
     QStringLiteral("sdrangel.channel.heatmap"),
     QStringLiteral("sdrangel.channel.ilsdemod"),
+    QStringLiteral("sdrangel.channel.pagerdemod"),
     QStringLiteral("sdrangel.feature.radiosonde"),
     QStringLiteral("sdrangel.feature.startracker"),
     QStringLiteral("sdrangel.feature.satellitetracker"),
@@ -96,9 +98,11 @@ MapSettings::MapSettings() :
     m_itemSettings.insert("StarTracker", new MapItemSettings("StarTracker", true,  QColor(230, 230, 230), true, true, 3));
     m_itemSettings.insert("SatelliteTracker", new MapItemSettings("SatelliteTracker", true, QColor(0, 0, 255), true, false, 0, modelMinPixelSize));
     m_itemSettings.insert("Beacons", new MapItemSettings("Beacons", true, QColor(255, 0, 0), false, true, 8));
+    m_itemSettings.insert("PagerDemod", new MapItemSettings("PagerDemod", true, QColor(200, 191, 231), true, false, 11));
     m_itemSettings.insert("Radiosonde", new MapItemSettings("Radiosonde", true, QColor(102, 0, 102), true, false, 11, modelMinPixelSize));
     m_itemSettings.insert("Radio Time Transmitters", new MapItemSettings("Radio Time Transmitters", true, QColor(255, 0, 0), false, true, 8));
     m_itemSettings.insert("Radar", new MapItemSettings("Radar", true, QColor(255, 0, 0), false, true, 8));
+    m_itemSettings.insert("NAT ATC Transmitters", new MapItemSettings("NAT ATC Transmitters", false, QColor(255, 0, 0), false, true, 8));
     m_itemSettings.insert("FT8Demod", new MapItemSettings("FT8Demod", true, QColor(0, 192, 255), true, true, 8));
     m_itemSettings.insert("HeatMap", new MapItemSettings("HeatMap", true, QColor(102, 40, 220), true, true, 11));
     m_itemSettings.insert("VLF", new MapItemSettings("VLF", false, QColor(255, 0, 0), false, true, 8));
@@ -157,8 +161,13 @@ MapSettings::MapSettings() :
     waypointsSettings->m_filterDistance = 500000;
     m_itemSettings.insert("Waypoints", waypointsSettings);
 
-    m_itemSettings.insert("KiwiSDR", new MapItemSettings("KiwiSDR", true, QColor(0, 255, 0), false, true, 8));
-    m_itemSettings.insert("SpyServer", new MapItemSettings("SpyServer", true, QColor(0, 0, 255), false, true, 8));
+    bool showOtherServers = true;
+#ifdef __EMSCRIPTEN__
+    showOtherServers = false; // Can't use without proxy
+#endif
+    m_itemSettings.insert("KiwiSDR", new MapItemSettings("KiwiSDR", showOtherServers, QColor(0, 255, 0), false, true, 8));
+    m_itemSettings.insert("SpyServer", new MapItemSettings("SpyServer", showOtherServers, QColor(0, 0, 255), false, true, 8));
+    m_itemSettings.insert("SDRangel", new MapItemSettings("SDRangel", true, QColor(255, 0, 255), false, true, 8));
 
     resetToDefaults();
 }
