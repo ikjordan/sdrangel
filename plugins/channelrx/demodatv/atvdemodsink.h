@@ -314,7 +314,15 @@ private:
     // This is why a digital tuner cannot display QSDefenda correctly, but an analog CRT can
     inline void processEOLCRT()
     {
-        static int interlaceCount = 0;
+        static int fieldCount = 0;                      // field count since last short interlace field detect
+        static int irregularInterlaceBucket = 0;        // Leaky bucket for irregular interlaces
+        static const int interlaceHalfFullBucket = 5;   // Value for a half full bucket
+
+#ifdef _CRT_DEBUG_
+        static int runningvSyncCount = 0;
+        static int runningfieldCount = 0;
+        static int lineCount = 0;
+#endif
 
         if (m_lineIndex == 4 && m_fieldIndex == 0)
         {
@@ -327,7 +335,7 @@ private:
         {
             if (m_lineIndex >= 4)
             {
-                // Need to blank rest of lines as beam moving to top of screen
+                // Need to blank rest of field lines as beam moving to top of screen
                 int rowIndex = (m_lineIndex + 1 - m_firstVisibleLine) * 2 - m_fieldIndex;
 
                 for (int i = rowIndex; i < m_settings.m_nbLines; i += 2)
@@ -335,35 +343,60 @@ private:
                     m_tvScreenBuffer->clearRow(i);
                 }
 
-                // See if we have detected a short field
+                // check for detection of a short field
                 if (m_fieldDetectSampleCount < m_fieldDetectThreshold2)
                 {
-                    if (m_fieldIndex == 1)
+                    if (fieldCount != 1)   // Regular detection is every other field
                     {
-                        qInfo("Wrong interlace");
-                        interlaceCount++;
+                        if (irregularInterlaceBucket < (2 * interlaceHalfFullBucket)) 
+                        {
+                            irregularInterlaceBucket++;
+                            qInfo("irregular field gap d=%i s=%i c=%i", m_fieldDetectSampleCount, fieldCount, irregularInterlaceBucket);
+                        }
                     }
                     else
                     {
-                        if (interlaceCount >0) interlaceCount--;
+                        if (irregularInterlaceBucket > 0)
+                        {
+                            irregularInterlaceBucket--;
+                            qInfo("regular field gap d=%i c=%i", m_fieldDetectSampleCount, irregularInterlaceBucket);
+                        }
                     }
 
-                    if (interlaceCount < 3)
+                    if (irregularInterlaceBucket < interlaceHalfFullBucket)
                     {
+                        // Not had too many irregular field detections, so set the field
                         m_fieldIndex = 1;
                     }
                     else
                     {
+                        // Ignore the field detection
                         m_fieldIndex = 1 - m_fieldIndex;
                     }
+                    fieldCount = 0;
                 }
                 else
                 {
                     // alternate
                     m_fieldIndex = 1 - m_fieldIndex;
+                    fieldCount++;
                 }
             }
-            m_lineIndex = 2; // Vsync is still active, so hold beam at top of screen
+            m_lineIndex = 2; // Vsync is still active, so move / hold beam at top of screen
+#ifdef _CRT_DEBUG_
+            runningvSyncCount = m_vSyncDetectSampleCount;
+            runningfieldCount = m_fieldDetectSampleCount;
+            lineCount++;
+        }
+        else 
+        {
+            // First line that did not trigger
+            if (m_lineIndex == 3)
+            {
+                qInfo("end l=%i v=%i d=%i v=%i d=%i", lineCount, runningvSyncCount, runningfieldCount, m_vSyncDetectSampleCount, m_fieldDetectSampleCount);
+            }
+            lineCount = 0;
+#endif
         }
 
         m_fieldDetectSampleCount = 0;
@@ -374,6 +407,10 @@ private:
             // CRT has gone past max lines, trigger vertical retrace
             m_lineIndex = 1;
             m_fieldIndex = 1 - m_fieldIndex;
+            fieldCount++;
+#ifdef _CRT_DEBUG_
+            qInfo("Overflow");
+#endif
         }
 
         int rowIndex = (m_lineIndex - m_firstVisibleLine) * 2 - m_fieldIndex;
