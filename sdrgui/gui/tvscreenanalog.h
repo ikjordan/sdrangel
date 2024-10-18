@@ -47,7 +47,7 @@ public:
 
 		m_imageData = new int[width * height];
 		m_lineShiftData = new int[height];
-		m_outOfBoundsLine = new int[width];
+		m_outOfBoundsLine = new int[width*2];
 		m_currentLine = m_outOfBoundsLine;
 
 		std::fill(m_imageData, m_imageData + width * height, 0);
@@ -84,6 +84,14 @@ public:
 		}
 	}
 
+	void clearDoubleRow(int line)
+	{
+		if ((line < m_height - 1) && (line >= 0))
+		{
+			std::fill(m_imageData + line * m_width, m_imageData + (line + 2) * m_width, 0);
+		}
+	}
+
 	const int* getLineShiftData()
 	{
 		return m_lineShiftData;
@@ -102,11 +110,34 @@ public:
 		}
 	}
 
+	void selectDoubleRow(int line, float shift)
+	{
+		if ((line < m_height - 1) && (line >= 0))
+		{
+			m_currentLine = m_imageData + line * m_width;
+			m_lineShiftData[line] = (1.0f + shift) * 127.5f;
+			m_lineShiftData[line + 1] = (1.0f + shift) * 127.5f;
+		}
+		else
+		{
+			m_currentLine = m_outOfBoundsLine;
+		}
+	}
+
 	void setSampleValue(int column, int value)
 	{
 		if ((column < m_width - 2) && (column >= -2))
 		{
 			m_currentLine[column + 2] = value;
+		}
+	}
+
+	void setDoubleSampleValue(int column, int value)
+	{
+		if ((column < m_width - 2) && (column >= -2))
+		{
+			m_currentLine[column + 2] = value;
+			m_currentLine[column + m_width + 2] = value;
 		}
 	}
 

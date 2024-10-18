@@ -192,7 +192,14 @@ private:
     inline void processSample(float& sample, int& sampleVideo)
     {
         // Filling pixel on the current line - reference index 0 at start of sync pulse
-		m_tvScreenBuffer->setSampleValue(m_sampleOffset - m_numberSamplesPerHSync, sampleVideo);
+        if (m_settings.m_atvStd != ATVDemodSettings::ATVStdAllEven)
+        {
+    		m_tvScreenBuffer->setSampleValue(m_sampleOffset - m_numberSamplesPerHSync, sampleVideo);
+        }
+        else
+        {
+    		m_tvScreenBuffer->setDoubleSampleValue(m_sampleOffset - m_numberSamplesPerHSync, sampleVideo);
+        }
 
         if (m_settings.m_hSync)
         {
@@ -255,7 +262,11 @@ private:
             }
             else if (m_settings.m_atvStd == ATVDemodSettings::ATVStdLongInterleaved)
             {
-                processEOLCRT();
+                processEOLGuidedInt();
+            }
+            else if (m_settings.m_atvStd == ATVDemodSettings::ATVStdAllEven)
+            {
+                processEOLAllEven();
             }
             else
             {
@@ -304,15 +315,20 @@ private:
 		m_tvScreenBuffer->selectRow(rowIndex, m_sampleOffsetFrac);
 	}
 
-    // Computer with flywheel CRT
+    // Flywheel CRT with semi-automatic field detection
+    // This implementation attempts to detect even and odd fields, but if the field repeatedly deviates from
+    // an odd - even - odd - even cadence then the fields are alternated automatically
+    // The beam is held at the top of the display until the end of vsync
+
     // From: https://uzebox.org/forums/viewtopic.php?t=11062
     // The blanking signal charges a capacitor, once it goes past a threshold the
     // TV/CRT takes that as a vertical blank and moves the beam back to the top
     // and holds it there until it discharges back down past a lower threshold
     // (it's got a bit of an hysteresis, we don't really care about this detail for an emulator).
     // Digital tuners just do: when the blank is longer than the non-blank it's considered a vertical blank.
-    // This is why a digital tuner cannot display QSDefenda correctly, but an analog CRT can
-    inline void processEOLCRT()
+    // This is why a digital tuner cannot display ZX81 QSDefenda correctly, but an analog CRT can
+
+    inline void processEOLGuidedInt()
     {
         static int fieldCount = 0;                      // field count since last short interlace field detect
         static int irregularInterlaceBucket = 0;        // Leaky bucket for irregular interlaces
@@ -348,7 +364,7 @@ private:
                 {
                     if (fieldCount != 1)   // Regular detection is every other field
                     {
-                        if (irregularInterlaceBucket < (2 * interlaceHalfFullBucket)) 
+                        if (irregularInterlaceBucket < (2 * interlaceHalfFullBucket))
                         {
                             irregularInterlaceBucket++;
                             qInfo("irregular field gap d=%i s=%i c=%i", m_fieldDetectSampleCount, fieldCount, irregularInterlaceBucket);
@@ -388,7 +404,7 @@ private:
             runningfieldCount = m_fieldDetectSampleCount;
             lineCount++;
         }
-        else 
+        else
         {
             // First line that did not trigger
             if (m_lineIndex == 3)
@@ -402,7 +418,7 @@ private:
         m_fieldDetectSampleCount = 0;
         m_vSyncDetectSampleCount = 0;
 
-        if ((m_lineIndex > m_settings.m_nbLines / 2 + m_fieldIndex + m_settings.m_maxLinesSync) && m_interleaved)
+        if (m_lineIndex > m_settings.m_nbLines / 2 + m_fieldIndex + m_settings.m_maxLinesSync)
         {
             // CRT has gone past max lines, trigger vertical retrace
             m_lineIndex = 1;
@@ -415,6 +431,51 @@ private:
 
         int rowIndex = (m_lineIndex - m_firstVisibleLine) * 2 - m_fieldIndex;
 		m_tvScreenBuffer->selectRow(rowIndex, m_sampleOffsetFrac);
+	}
+
+    // Flywheel CRT which always assumes an even interlace field
+    // The beam is held at the top of the display until the end of vsync
+    // Ignores field detection and updates the display at field frequency
+    // For 1980s computers that generate 2 identical PAL fields
+
+    inline void processEOLAllEven()
+    {
+        if (m_lineIndex == 4)
+        {
+            m_tvScreenBuffer = m_registeredTVScreen->swapBuffers();
+        }
+
+        if ((m_vSyncDetectSampleCount > m_vSyncDetectThreshold) &&
+            ((m_lineIndex < 4) || (m_lineIndex > (m_settings.m_nbLines / 2 + m_settings.m_maxLinesSync - m_settings.m_minLinesSync + 1))) &&
+            m_settings.m_vSync)
+        {
+            if (m_lineIndex >= 4)
+            {
+                // Need to blank rest of field lines as beam moving to top of screen
+                int rowIndex = (m_lineIndex + 1 - m_firstVisibleLine) * 2;
+
+                for (int i = rowIndex; i < m_settings.m_nbLines; i += 2)
+                {
+                    m_tvScreenBuffer->clearDoubleRow(i);
+                }
+            }
+            m_lineIndex = 2; // Vsync is still active, so move / hold beam at top of screen
+        }
+
+        m_fieldDetectSampleCount = 0;
+        m_vSyncDetectSampleCount = 0;
+
+        if (m_lineIndex > m_settings.m_nbLines / 2 + m_settings.m_maxLinesSync)
+        {
+            // CRT has gone past max lines, trigger vertical retrace
+            m_lineIndex = 1;
+#ifdef _CRT_DEBUG_
+            qInfo("Overflow");
+#endif
+        }
+
+        int rowIndex = (m_lineIndex - m_firstVisibleLine) * 2;
+		m_tvScreenBuffer->selectDoubleRow(rowIndex, m_sampleOffsetFrac);
 	}
 
     // Vertical sync is obtained by skipping horizontal sync on the line that triggers vertical sync (new frame)

@@ -355,7 +355,15 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
         m_firstVisibleLine   = 20;
         m_numberSamplesHSyncCrop = (int) (0.085f * lineDuration * sampleRate); // 8.5% of full line empirically
         break;
-    case ATVDemodSettings::ATVStdLongInterleaved: // Follows Sinclair ZX81
+    case ATVDemodSettings::ATVStdLongInterleaved: // Takes guidance on field to display
+        m_interleaved        = true;
+        m_numberOfVSyncLines = 6;
+        m_numberOfBlackLines = 49;
+        m_firstVisibleLine   = 15;      // Move display down
+        m_horizontalAdjust   = 0.75f;   // Move display left
+        m_numberSamplesHSyncCrop = (int) (0.085f * lineDuration * sampleRate); // 8.5% of full line empirically
+        break;
+    case ATVDemodSettings::ATVStdAllEven: // Interlaced display, but all even fields
         m_interleaved        = true;
         m_numberOfVSyncLines = 6;
         m_numberOfBlackLines = 49;

@@ -434,7 +434,7 @@ void ATVDemodGUI::enterEvent(EnterEventType* event)
 
 void ATVDemodGUI::tick()
 {
-    if (m_intTickCount < 4) // ~200 ms
+    if (m_intTickCount < 8) // ~200 ms
     {
         m_intTickCount++;
     }

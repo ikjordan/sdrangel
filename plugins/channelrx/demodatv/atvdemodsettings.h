@@ -43,6 +43,7 @@ struct ATVDemodSettings
         ATVStd819,
         ATVStdShortInterleaved,
         ATVStdLongInterleaved,
+        ATVStdAllEven,
         ATVStdShort,
         ATVStdHSkip
     };

@@ -786,6 +786,11 @@
         </item>
         <item>
          <property name="text">
+          <string>AllEvenI</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>ShortNI</string>
          </property>
         </item>
