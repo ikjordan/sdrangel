@@ -47,7 +47,7 @@ public:
 
 		m_imageData = new int[width * height];
 		m_lineShiftData = new int[height];
-		m_outOfBoundsLine = new int[width*2];
+		m_outOfBoundsLine = new int[width];
 		m_currentLine = m_outOfBoundsLine;
 
 		std::fill(m_imageData, m_imageData + width * height, 0);
@@ -134,7 +134,7 @@ public:
 
 	void setDoubleSampleValue(int column, int value)
 	{
-		if ((column < m_width - 2) && (column >= -2))
+		if ((column < m_width - 2) && (column >= -2) && (m_currentLine != m_outOfBoundsLine))
 		{
 			m_currentLine[column + 2] = value;
 			m_currentLine[column + m_width + 2] = value;
