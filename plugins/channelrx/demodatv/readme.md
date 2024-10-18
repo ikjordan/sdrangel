@@ -150,7 +150,7 @@ This combo lets you set the TV standard type. This sets the number of lines per 
   - **PAL525**: the only difference with PAL625 is the number of black lines which is down to 15
   - **819L**: this is the 819 lines system F (Belgium).
   - **ShortI**: this is an experimental mode that uses the least possible vertical sync lines as possible. That is one line for a long synchronization pulse and one line equalizing (short) pulses level to reset the vertical sync condition. Thus only 2 lines are consumed for vertical sync and the rest is left to the image. In this mode the frames are interleaved and an odd number of lines should be used.
-  - **LongI**: this is an experimental mode that mimics the non standard implementation of PAL625 used in the Sinclair ZX81. A longer vertical sync pulse is generated. The two interleaved fields are identical, so it is not possible to determine which field is active by measuring the vertical sync pulse length.
+  - **GuideI**: this is an experimental mode based on PAL625 that attempts to set the interlace field from the vertical sync information. If the interlace field is repeatedly incorrect or is not detected, then the interlace field is alternated. This allows the correct display of UHF output from 1980s computers, many of which did not set the position of vsync correctly for interlace detection.
   - **ShortNI**: this is the same as above but with non interleaved frames.
   - **HSkip**: this is the horizontal sync skip technique for vertical synchronization. This has been in use in the first TV experiments with a small number of lines. This method just skips one horizontal synchronization pulse to mark the last or the first line (here it is the last). This method does not use any full line for vertical sync and all lines can be used for the image thus it suits the modes with a small number of lines. With more lines however the risk of missing pulses gets higher in adverse conditions because the pulses get shorter and may get swallowed by a stray pulse or a stray pulse can be taken for a valid one. In this case two images might get out of sync instead of just two lines. In practice this is suitable up to 90~120 lines.
 
@@ -175,7 +175,7 @@ When the standard chosen matches the standard of transmission the image should a
     </tr>
     <tr>
         <td>625</td>
-        <td>PAL625, PAL525, ShortI, LongI, ShortNI,</td>
+        <td>PAL625, PAL525, ShortI, GuideI, ShortNI,</td>
     </tr>
     <tr>
         <td>525</td>
