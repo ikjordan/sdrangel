@@ -51,6 +51,11 @@ void ATVDemodSettings::resetToDefaults()
     m_levelSynchroTop = 0.15f;
     m_levelBlack = 0.3f;
     m_rgbColor = QColor(255, 255, 255).rgb();
+    m_minLinesSync = 30;
+    m_maxLinesSync = 10;
+    m_flip = false;
+    m_hOffset = false;
+    m_reduceRange = false;
     m_title = "ATV Demodulator";
     m_udpAddress = "127.0.0.1";
     m_udpPort = 9999;
@@ -110,6 +115,10 @@ QByteArray ATVDemodSettings::serialize() const
 
     s.writeS32(34, m_minLinesSync);
     s.writeS32(35, m_maxLinesSync);
+
+    s.writeBool(36, m_flip);
+    s.writeBool(37, m_hOffset);
+    s.writeBool(38, m_reduceRange);
 
     return s.final();
 }
@@ -193,6 +202,10 @@ bool ATVDemodSettings::deserialize(const QByteArray& arrData)
 
         d.readS32(34, &m_minLinesSync, 20);
         d.readS32(35, &m_maxLinesSync, 10);
+
+        d.readBool(36, &m_flip, false);
+        d.readBool(37, &m_hOffset, false);
+        d.readBool(38, &m_reduceRange, false);
 
         return true;
     }

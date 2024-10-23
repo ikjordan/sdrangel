@@ -842,6 +842,36 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="flip">
+        <property name="toolTip">
+         <string>Invert the luma values</string>
+        </property>
+        <property name="text">
+         <string>Flip</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="hOffset">
+        <property name="toolTip">
+         <string>Adjust the start of the horizontal line</string>
+        </property>
+        <property name="text">
+         <string>H Offset</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="reduceRange">
+        <property name="toolTip">
+         <string>Reduce the range between full black and full white luma</string>
+        </property>
+        <property name="text">
+         <string>Reduce Range</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

@@ -54,7 +54,9 @@ ATVDemodSink::ATVDemodSink() :
     m_bfoFilter(200.0, 1000000.0, 0.9),
     m_DSBFilter(nullptr),
     m_DSBFilterBuffer(nullptr),
-    m_DSBFilterBufferIndex(0)
+    m_DSBFilterBufferIndex(0),
+    m_horizontalAdjust(0.0f),
+    m_rateAndDuration(1000000)
 {
     qDebug("ATVDemodSink::ATVDemodSink");
     //*************** ATV PARAMETERS  ***************
@@ -298,10 +300,20 @@ void ATVDemodSink::demod(Complex& c)
 
     //********** gray level **********
     // -0.3 -> 0.7 / 0.7
-    sampleVideo = (int) ((sample - m_settings.m_levelBlack) * m_sampleRangeCorrection);
+
+    sampleVideo = m_settings.m_reduceRange ? (int) (((((sample - m_settings.m_levelBlack) * m_sampleRangeCorrection) - 128.0) * 1.9f) + 128.0f) :
+                                             (int) ((sample - m_settings.m_levelBlack) * m_sampleRangeCorrection);
 
     // 0 -> 255
-    sampleVideo = (sampleVideo < 0) ? 0 : (sampleVideo > 255) ? 255 : sampleVideo;
+
+    if (m_settings.m_flip)
+    {
+        sampleVideo = (sampleVideo < 0) ? 255 : (sampleVideo > 255) ? 0 : 255 - sampleVideo;
+    }
+    else
+    {
+        sampleVideo = (sampleVideo < 0) ? 0 : (sampleVideo > 255) ? 255 : sampleVideo;
+    }
 
     //********** process video sample **********
 
@@ -313,7 +325,7 @@ void ATVDemodSink::demod(Complex& c)
 
 void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd, float lineDuration)
 {
-    m_horizontalAdjust       = 0.0f;
+    m_rateAndDuration = sampleRate * lineDuration;
 
     switch(atvStd)
     {
@@ -360,7 +372,6 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
         m_numberOfVSyncLines = 6;
         m_numberOfBlackLines = 49;
         m_firstVisibleLine   = 15;      // Move display down
-        m_horizontalAdjust   = 0.75f;   // Move display left
         m_numberSamplesHSyncCrop = (int) (0.085f * lineDuration * sampleRate); // 8.5% of full line empirically
         break;
     case ATVDemodSettings::ATVStdAllEven: // Interlaced display, but all even fields
@@ -368,7 +379,6 @@ void ATVDemodSink::applyStandard(int sampleRate, ATVDemodSettings::ATVStd atvStd
         m_numberOfVSyncLines = 6;
         m_numberOfBlackLines = 49;
         m_firstVisibleLine   = 15;      // Move display down
-        m_horizontalAdjust   = 0.75f;   // Move display left
         m_numberSamplesHSyncCrop = (int) (0.085f * lineDuration * sampleRate); // 8.5% of full line empirically
         break;
     case ATVDemodSettings::ATVStdPAL625: // Follows PAL-B/G/H standard
@@ -498,6 +508,9 @@ void ATVDemodSink::applySettings(const ATVDemodSettings& settings, bool force)
             << "m_vSync:" << settings.m_vSync
             << "m_invertVideo:" << settings.m_invertVideo
             << "m_halfFrames:" << settings.m_halfFrames
+            << "m_flip" << settings.m_flip
+            << "m_hOffset" << settings.m_hOffset
+            << "m_reduceRange" << settings.m_reduceRange
             << "m_levelSynchroTop:" << settings.m_levelSynchroTop
             << "m_levelBlack:" << settings.m_levelBlack
             << "m_rgbColor:" << settings.m_rgbColor
@@ -560,8 +573,13 @@ void ATVDemodSink::applySettings(const ATVDemodSettings& settings, bool force)
     }
 
     if ((settings.m_levelBlack != m_settings.m_levelBlack) || force) {
-        m_sampleRangeCorrection = 255.0f / (1.0f - m_settings.m_levelBlack);
+        m_sampleRangeCorrection = 255.0f / (1.0f - settings.m_levelBlack);
     }
 
+    if ((settings.m_hOffset != m_settings.m_hOffset) || force)
+    {
+        m_horizontalAdjust = settings.m_hOffset ? 0.75f : 0.0f;
+        m_numberSamplesPerHSync = (int)(m_rateAndDuration * (10.5 + m_horizontalAdjust) / 64.0);
+    }
     m_settings = settings;
 }

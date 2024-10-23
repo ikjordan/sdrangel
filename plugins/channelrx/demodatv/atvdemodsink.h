@@ -134,6 +134,7 @@ private:
     int m_numberSamplesHSyncCrop;      //!< number of samples to crop from start of horizontal synchronization
     bool m_interleaved;                //!< interleaved image
     float m_horizontalAdjust;          //!< Deviation from standards timing
+    float m_rateAndDuration;           //!< Product of sample rate and line duration
 
     //*************** PROCESSING  ***************
 

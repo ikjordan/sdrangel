@@ -187,6 +187,9 @@ void ATVDemod::applySettings(const ATVDemodSettings& settings, bool force)
             << "m_vSync:" << settings.m_vSync
             << "m_invertVideo:" << settings.m_invertVideo
             << "m_halfFrames:" << settings.m_halfFrames
+            << "m_flip" << settings.m_flip
+            << "m_hOffset" << settings.m_hOffset
+            << "m_reduceRange" << settings.m_reduceRange
             << "m_levelSynchroTop:" << settings.m_levelSynchroTop
             << "m_levelBlack:" << settings.m_levelBlack
             << "m_minLinesSync" << settings.m_minLinesSync

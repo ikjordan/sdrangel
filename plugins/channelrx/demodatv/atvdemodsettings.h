@@ -63,7 +63,7 @@ struct ATVDemodSettings
     int           m_nbLines;              //!< Number of lines per full frame
     int           m_fps;                  //!< Number of frames per second
     ATVStd        m_atvStd;               //!< Standard
-    bool          m_hSync;                //!< Enable/disable horizontal sybchronization
+    bool          m_hSync;                //!< Enable/disable horizontal synchronization
     bool          m_vSync;                //!< Enable/disable vertical synchronization
     bool          m_invertVideo;          //!< Toggle invert video
     bool          m_halfFrames;           //!< Toggle half frames processing
@@ -71,6 +71,9 @@ struct ATVDemodSettings
     float         m_levelBlack;           //!< Black level (0.0 to 1.0 scale)
     int           m_maxLinesSync;         //!< Number of lines above standard number of lines where vsync forced
     int           m_minLinesSync;         //!< Number of lines below (standard number + max lines) where vsync can be detected
+    bool          m_flip;                 //!< Invert luma on display
+    bool          m_hOffset;              //!< Shift display horizontally to the left
+    bool          m_reduceRange;          //!< Reduce the allowed luma range, to ensure more values correspond to pure white or pure black
 
     // common channel settings
     quint32 m_rgbColor;

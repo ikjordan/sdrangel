@@ -112,6 +112,9 @@ void ATVDemodGUI::displaySettings()
     ui->vSync->setChecked(m_settings.m_vSync);
     ui->halfImage->setChecked(m_settings.m_halfFrames);
     ui->invertVideo->setChecked(m_settings.m_invertVideo);
+    ui->flip->setChecked(m_settings.m_flip);
+    ui->hOffset->setChecked(m_settings.m_hOffset);
+    ui->reduceRange->setChecked(m_settings.m_reduceRange);
     ui->standard->setCurrentIndex((int) m_settings.m_atvStd);
     lineTimeUpdate();
     topTimeUpdate();
@@ -499,6 +502,24 @@ void ATVDemodGUI::on_vSync_clicked()
     applySettings();
 }
 
+void ATVDemodGUI::on_flip_clicked()
+{
+    m_settings.m_flip = ui->flip->isChecked();
+    applySettings();
+}
+
+void ATVDemodGUI::on_hOffset_clicked()
+{
+    m_settings.m_hOffset = ui->hOffset->isChecked();
+    applySettings();
+}
+
+void ATVDemodGUI::on_reduceRange_clicked()
+{
+    m_settings.m_reduceRange = ui->reduceRange->isChecked();
+    applySettings();
+}
+
 void ATVDemodGUI::on_invertVideo_clicked()
 {
     m_settings.m_invertVideo = ui->invertVideo->isChecked();
@@ -654,6 +675,9 @@ void ATVDemodGUI::makeUIConnections()
     QObject::connect(ui->vSync, &QCheckBox::clicked, this, &ATVDemodGUI::on_vSync_clicked);
     QObject::connect(ui->invertVideo, &QCheckBox::clicked, this, &ATVDemodGUI::on_invertVideo_clicked);
     QObject::connect(ui->halfImage, &QCheckBox::clicked, this, &ATVDemodGUI::on_halfImage_clicked);
+    QObject::connect(ui->flip, &QCheckBox::clicked, this, &ATVDemodGUI::on_flip_clicked);
+    QObject::connect(ui->hOffset, &QCheckBox::clicked, this, &ATVDemodGUI::on_hOffset_clicked);
+    QObject::connect(ui->reduceRange, &QCheckBox::clicked, this, &ATVDemodGUI::on_reduceRange_clicked);
     QObject::connect(ui->modulation, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ATVDemodGUI::on_modulation_currentIndexChanged);
     QObject::connect(ui->nbLines, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ATVDemodGUI::on_nbLines_currentIndexChanged);
     QObject::connect(ui->fps, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ATVDemodGUI::on_fps_currentIndexChanged);

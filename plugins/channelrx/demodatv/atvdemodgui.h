@@ -133,6 +133,10 @@ private slots:
     void on_amScaleFactor_valueChanged(int value);
     void on_amScaleOffset_valueChanged(int value);
     void on_screenTabWidget_currentChanged(int index);
+    void on_flip_clicked();
+    void on_hOffset_clicked();
+    void on_reduceRange_clicked();
+
 };
 
 #endif // INCLUDE_ATVDEMODGUI_H
